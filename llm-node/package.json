@@ -7,9 +7,12 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "@mozilla/readability": "^0.6.0",
     "axios": "^1.13.2",
+    "cheerio": "^1.1.2",
     "dotenv": "^17.2.3",
     "groq": "^5.0.1",
+    "jsdom": "^27.3.0",
     "openai": "^6.15.0"
   }
 }

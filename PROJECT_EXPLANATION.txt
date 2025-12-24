@@ -1,0 +1,105 @@
+ContentRefinery Project Explanation
+===================================
+
+Project overview
+----------------
+This repo is a three-part pipeline:
+1) A Laravel API stores articles in a database.
+2) A Node script calls a large language model (LLM) to enhance one article
+   and writes the enhanced content back to the API.
+3) A React + TypeScript frontend reads the articles and renders a visual grid
+   of original and AI-enhanced entries.
+
+Main components and how they work
+---------------------------------
+Backend (Laravel API) - backend-laravel
+- Laravel 12 API using Eloquent models and migrations.
+- Primary data model: Article (app/Models/Article.php).
+- API routes are registered in routes/api.php with Route::apiResource('articles', ArticleController::class),
+  which wires standard CRUD endpoints.
+- ArticleController (app/Http/Controllers/API/ArticleController.php) implements:
+  - index(): returns all articles as JSON.
+  - store(): validates and creates a new article.
+  - show(): returns a single article via route model binding.
+  - update(): validates and updates an article.
+  - destroy(): deletes an article and returns 204 No Content.
+- Database schema (database/migrations/2025_12_21_102606_create_articles_table.php):
+  - id, title, slug (unique), content, source_url
+  - is_generated (boolean) to flag AI-enhanced articles
+  - original_article_id (self-referencing foreign key)
+  - published_at, created_at, updated_at
+- Scraping command (app/Console/Commands/ScrapeBeyondChats.php):
+  - `php artisan scrape:beyondchats --count=5` scrapes articles from BeyondChats blog.
+  - Uses Guzzle for HTTP, builds slug from title, and inserts rows into articles.
+
+LLM enhancer (Node script) - llm-node
+- A standalone Node script (llm-node/index.js), not a web server.
+- Loads environment variables from llm-node/.env:
+  - API_BASE_URL (base URL of the Laravel API)
+  - GROQ_API_KEY or OPENAI_API_KEY (chooses provider)
+  - GROQ_BASE_URL (optional, defaults to https://api.groq.com/openai/v1)
+  - GROQ_MODEL or OPENAI_MODEL (optional model overrides)
+- Flow:
+  1) Calls GET /api/articles?limit=1 (the API ignores limit and returns all).
+  2) Picks the first article and sends a prompt to Groq or OpenAI.
+  3) Updates the article with PUT /api/articles/{id}.
+- Note: the Laravel update endpoint only allows title, content, and source_url.
+  The script also sends is_generated, but it is not currently persisted.
+
+Frontend (React + TypeScript) - frontend-react
+- Vite + React 19 + TypeScript app (frontend-react/src/App.tsx).
+- Tailwind CSS utility classes provide layout and styling.
+- Uses axios to call the backend:
+  - GET http://127.0.0.1:8000/api/articles
+- Renders a grid of articles, with a badge based on is_generated:
+  - Original articles: green badge
+  - AI-enhanced articles: blue/purple badge
+- The preview strips HTML tags and truncates content for display.
+- The "Full Article" link uses source_url from the API.
+
+CRUD operations (Articles)
+--------------------------
+Create
+- POST /api/articles
+- Controller: ArticleController@store
+- Required fields: title, content, source_url, slug (unique)
+
+Read
+- GET /api/articles
+- Controller: ArticleController@index
+- Returns all articles as JSON
+
+- GET /api/articles/{id}
+- Controller: ArticleController@show
+- Returns a single article
+
+Update
+- PUT/PATCH /api/articles/{id}
+- Controller: ArticleController@update
+- Required fields: title, content, source_url
+- Note: slug and is_generated are not updated by this method
+
+Delete
+- DELETE /api/articles/{id}
+- Controller: ArticleController@destroy
+- Returns 204 No Content
+
+Technologies used
+-----------------
+Backend
+- PHP 8.2+, Laravel 12, Eloquent ORM, Laravel routing + validation
+- Guzzle (HTTP client for scraping)
+- Database: Laravel-managed (SQLite by default in new projects, configurable via .env)
+- Vite + Tailwind (present for Laravel assets, though API is the primary role)
+
+LLM script
+- Node.js (ES modules)
+- axios for HTTP requests
+- openai client library used for both OpenAI and Groq APIs
+- dotenv for configuration
+
+Frontend
+- React 19 + TypeScript
+- Vite for bundling and dev server
+- Tailwind CSS for styling
+- axios for API calls
