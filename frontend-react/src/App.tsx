@@ -20,9 +20,10 @@ function App() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000';
 
   useEffect(() => {
-    axios.get<Article[]>('http://127.0.0.1:8000/api/articles')
+    axios.get<Article[]>(`${apiBaseUrl}/api/articles`)
       .then(res => {
         setArticles(res.data);
         setLoading(false);
