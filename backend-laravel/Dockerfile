@@ -20,4 +20,6 @@ RUN composer install --no-dev --optimize-autoloader \
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 
-CMD ["sh", "-c", "php artisan serve --host 0.0.0.0 --port ${PORT:-8000}"]
+RUN chmod +x /var/www/html/docker-entrypoint.sh
+
+CMD ["/var/www/html/docker-entrypoint.sh"]
