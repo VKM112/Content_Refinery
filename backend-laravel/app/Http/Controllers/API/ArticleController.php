@@ -9,9 +9,23 @@ use Illuminate\Http\JsonResponse;
 
 class ArticleController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Article::all());
+        $query = Article::query();
+
+        $order = $request->query('order');
+        if ($request->boolean('latest') || $order === 'latest' || $order === 'desc') {
+            $query->orderByDesc('published_at')->orderByDesc('created_at');
+        } elseif ($order === 'asc') {
+            $query->orderBy('published_at')->orderBy('created_at');
+        }
+
+        $limit = (int) $request->query('limit');
+        if ($limit > 0) {
+            $query->limit($limit);
+        }
+
+        return response()->json($query->get());
     }
 
     public function store(Request $request): JsonResponse
@@ -20,7 +34,10 @@ class ArticleController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'source_url' => 'required|url',
-            'slug' => 'required|string|unique:articles,slug'
+            'slug' => 'required|string|unique:articles,slug',
+            'is_generated' => 'sometimes|boolean',
+            'original_article_id' => 'nullable|exists:articles,id',
+            'published_at' => 'nullable|date',
         ]);
 
         $article = Article::create($validated);
@@ -37,7 +54,10 @@ class ArticleController extends Controller
         $article->update($request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'source_url' => 'required|url'
+            'source_url' => 'required|url',
+            'is_generated' => 'sometimes|boolean',
+            'original_article_id' => 'nullable|exists:articles,id',
+            'published_at' => 'nullable|date',
         ]));
         return response()->json($article);
     }

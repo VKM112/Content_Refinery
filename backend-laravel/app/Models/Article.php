@@ -11,5 +11,13 @@ class Article extends Model
         'content',
         'source_url',
         'slug',
+        'is_generated',
+        'original_article_id',
+        'published_at',
+    ];
+
+    protected $casts = [
+        'is_generated' => 'boolean',
+        'published_at' => 'datetime',
     ];
 }
