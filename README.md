@@ -143,9 +143,9 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 ```
 
-## Live Link
+## Live Link (Frontend)
 
-- TODO: add deployment URL
+- `https://contentrefinery.netlify.app/` (homepage shows Original Articles + AI Enhanced Articles; click a card to open full text)
 
 ## Notes
 
