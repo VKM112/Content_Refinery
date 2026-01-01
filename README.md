@@ -145,7 +145,7 @@ jobs:
 
 ## Live Link (Frontend)
 
-- `https://contentrefinery.netlify.app/` (homepage shows Original Articles + AI Enhanced Articles; click a card to open full text)
+- `https://contentrefinery.netlify.app` (homepage shows Original Articles + AI Enhanced Articles; click a card to open full text)
 
 ## Notes
 
